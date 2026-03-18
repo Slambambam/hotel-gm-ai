@@ -1,0 +1,2177 @@
+{
+  "name": "Hotel General Manager Multi V8",
+  "nodes": [
+    {
+      "parameters": {
+        "toolDescription": "Use for HR facts: schedules, shifts, attendance, positions, and compensation. Return only verified facts and explicit data gaps.",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "You are the hotel HR Operations Manager.\n\nAVAILABLE SOURCES:\n- tool_hotel_personal_schedule: schedules, shifts, attendance.\n- tool_hotel_personal_salary: positions and compensation.\n- Forecast_Tool: occupancy and bed nights by date — use to align staffing with demand.\n\nRULES:\n1. Never invent employees, shifts, or compensation.\n2. Cross-reference forecast occupancy with scheduled staff to flag understaffing risk.\n3. If data is missing, explicitly mark it as DATA_GAP.\n4. Do not use HTML.\n5. Return this contract:\nDOMAIN: HR\nDATE_SCOPE: <date_or_period>\nFACTS:\n- ...\nDATA_GAPS:\n- ...\nRECOMMENDED_ACTIONS:\n- ..."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        -2176,
+        3120
+      ],
+      "id": "a2d47e2b-cccc-4df8-8e06-8bc0ac281802",
+      "name": "HR Manager"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Use for marketing and commercial context. If there is no connected reputation or campaign source, report a data gap instead of guessing.",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "You are the hotel Marketing and Revenue Insight Manager.\n\nAVAILABLE SOURCES:\n- Forecast_Tool: demand and commercial context by date.\n\nMISSING SOURCES:\n- No connected live source for Booking or Google reviews.\n- No connected live source for Google Ads or Meta ROI.\n\nRULES:\n1. Never simulate reviews, ratings, campaign results, or ROI.\n2. If a request depends on an unconnected source, return DATA_GAP.\n3. Do not use HTML.\n4. Return this contract:\nDOMAIN: MARKETING\nDATE_SCOPE: <date_or_period>\nFACTS:\n- ...\nDATA_GAPS:\n- ...\nRECOMMENDED_ACTIONS:\n- ..."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        -2752,
+        3120
+      ],
+      "id": "7f85298a-273e-4ce6-aeb8-d6457b8e0a15",
+      "name": "Marketing Manager"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Operational front office and reservation facts: occupancy, ADR, RevPAR, free rooms, arrivals, departures, balances, and OOS risk.",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "You are the hotel Front Office and Reservations Manager.\n\nAVAILABLE SOURCES:\n- Forecast_Tool: occupancy, ADR, RevPAR, bed nights by exact date.\n- reservations_tool: reservations, guests, amounts, notes.\n- reception_tool: room, departure, balance, and reception operations data.\n\nRULES:\n1. Always use exact dates in dd.MM.yyyy.\n2. Never invent rooms, guests, or percentages.\n3. If data is missing, return DATA_GAP.\n4. Do not use HTML.\n5. Return this contract:\nDOMAIN: FRONT_OFFICE\nDATE_SCOPE: <date_or_period>\nFACTS:\n- ...\nDATA_GAPS:\n- ...\nRECOMMENDED_ACTIONS:\n- ..."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        -2464,
+        3120
+      ],
+      "id": "76796467-93de-48cb-8f75-b24b99ad9cc7",
+      "name": "Front Office Manager"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Financial facts for expenses, payments, bar revenue, and accounting records. Return only verified amounts, currency, and period.",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "You are the hotel Accounting Controller.\n\nAVAILABLE SOURCES:\n- tool_hotel_expenses: invoices and expense records.\n- tool_hotel_payments: payments.\n- tool_hotel_income_bar: bar revenue.\n\nRULES:\n1. Never invent amounts, currency, or counterparties.\n2. Include currency and period when possible.\n3. If data is missing, return DATA_GAP.\n4. Do not use HTML.\n5. Return this contract:\nDOMAIN: ACCOUNTING\nDATE_SCOPE: <date_or_period>\nFACTS:\n- ...\nDATA_GAPS:\n- ...\nRECOMMENDED_ACTIONS:\n- ..."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        -1888,
+        3120
+      ],
+      "id": "1deebcf2-39e4-4f19-b212-32a3651f4e6d",
+      "name": "Accounting Manager"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -512,
+        2784
+      ],
+      "id": "c1b176ba-1d1b-460f-a6f3-d693d763290e",
+      "name": "Send a text message",
+      "webhookId": "e8a95fb7-f5bd-46fe-94aa-40316b4a2fdb",
+      "credentials": {
+        "telegramApi": {
+          "id": "XVpI5xS61NVUsqcw",
+          "name": "Telegram account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Използвай този инструмент винаги, когато потребителят попита за времето, температурата или прогнозата за Банско.",
+        "url": "https://api.openweathermap.org/data/2.5/weather",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openWeatherMapApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "Bansko,BG"
+            },
+            {
+              "name": "lang",
+              "value": "bg"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.3,
+      "position": [
+        -3136,
+        2880
+      ],
+      "id": "cdec466c-1323-4f63-aed2-f4544ff25a49",
+      "name": "get_weather",
+      "credentials": {
+        "openWeatherMapApi": {
+          "id": "0OOtCJWQi7D8ommQ",
+          "name": "OpenWeatherMap account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Operational F&B facts for breakfast covers, inventory, food cost range, and shortage-related actions.",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "You are the hotel F&B Operations Manager.\n\nAVAILABLE SOURCES:\n- Forecast_Tool: bed nights and demand by date.\n- tool_hotel_inventory: inventory facts.\n- tool_hotel_payments: supplier-payment context if needed.\n\nRULES:\n1. Use 2.00-3.00 EUR per person only as a planning range, never as an asserted fact.\n2. If inventory data is missing, return DATA_GAP.\n3. Do not use HTML.\n4. Return this contract:\nDOMAIN: FNB\nDATE_SCOPE: <date_or_period>\nFACTS:\n- ...\nDATA_GAPS:\n- ...\nRECOMMENDED_ACTIONS:\n- ...",
+          "maxIterations": 6
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        -1584,
+        3120
+      ],
+      "id": "c319642c-905e-4241-a753-81d44a32a2d0",
+      "name": "F&B Manager"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "id-1",
+              "leftValue": "={{ $json.message.voice }}",
+              "operator": {
+                "type": "object",
+                "operation": "exists"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "3caa0478-7abb-49ba-baa5-008305bff06b",
+      "name": "Check Message Type",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -4048,
+        2432
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.voice.file_id }}",
+        "additionalFields": {}
+      },
+      "id": "951010ab-1a20-4d65-af11-1c09332b3c5e",
+      "name": "Download Voice File",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -3600,
+        2432
+      ],
+      "webhookId": "dace00e0-3b5c-4aea-87bf-a6abbbeec6e4",
+      "credentials": {
+        "telegramApi": {
+          "id": "XVpI5xS61NVUsqcw",
+          "name": "Telegram account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "id": "fd4ec31c-2c40-416e-bf99-b0b090575b84",
+      "name": "Transcribe Voice to Text",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        -3328,
+        2448
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "4x9Kl6G0CByBvK7k",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "chatInput",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "sessionId",
+              "value": "={{ $('Telegram Trigger1').item.json.message.chat.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "934718ea-f359-4784-bf8a-9317ad4161c4",
+      "name": "Prepare Transcribed Text",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3072,
+        2464
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.text.toLowerCase() }}",
+                    "rightValue": "фактура",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "4bf61ac1-3b01-40b0-bb55-49594dec8d21"
+                  },
+                  {
+                    "leftValue": "={{ $json.text.toLowerCase() }}",
+                    "rightValue": "инвойс",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "inv-check-v2"
+                  },
+                  {
+                    "leftValue": "={{ $json.text.toLowerCase() }}",
+                    "rightValue": "invoice",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "invoice-en-check"
+                  }
+                ],
+                "combinator": "or"
+              },
+              "renameOutput": true,
+              "outputKey": "Invoice"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.text.toLowerCase() }}",
+                    "rightValue": "стокова разписка",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "70cb342b-1b36-489b-be6b-34b844a2d2a1"
+                  },
+                  {
+                    "leftValue": "={{ $json.text.toLowerCase() }}",
+                    "rightValue": "delivery note",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "delivery-note-check"
+                  }
+                ],
+                "combinator": "or"
+              },
+              "renameOutput": true,
+              "outputKey": "Стокова разписка"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "5f53b458-334f-4557-b43f-a758ad316bfd",
+      "name": "Route Document Type",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -2960,
+        1808
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.document ? $json.message.document.file_id : $json.message.photo[$json.message.photo.length - 1].file_id }}",
+        "additionalFields": {}
+      },
+      "id": "65167e96-c77a-4158-91ac-b86dcdda2462",
+      "name": "Download Document",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -3696,
+        1872
+      ],
+      "webhookId": "d94ba1a2-af43-40e7-a5b9-7a0dcbe28add",
+      "credentials": {
+        "telegramApi": {
+          "id": "XVpI5xS61NVUsqcw",
+          "name": "Telegram account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "id-1",
+              "leftValue": "={{ $json.message.document }}",
+              "operator": {
+                "type": "object",
+                "operation": "exists"
+              }
+            },
+            {
+              "id": "id-2",
+              "leftValue": "={{ $json.message.photo }}",
+              "operator": {
+                "type": "array",
+                "operation": "exists"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "71eb6a37-c92a-4516-89c7-11bf87bc0d17",
+      "name": "Check for Document",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -3856,
+        2032
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "id": "313e144f-d1a8-4a9a-bf89-63d249c75c57",
+      "name": "Extract from PDF",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -3264,
+        2016
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Extract from PDF').item.json.text }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are an invoice extraction specialist for hotel accounting. Extract only values that are explicitly present in the document. Never invent values. Normalize dates as dd.MM.yyyy when possible. Return fields exactly as defined by the structured output schema. Use empty strings for missing fields. Set confidence to high, medium, or low."
+        }
+      },
+      "id": "077d88ad-7055-4650-99dc-23e90d8d8fe8",
+      "name": "Process Invoice Data",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -2160,
+        1664
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Extract from PDF').item.json.text }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a stock receipt extraction specialist for hotel inventory. Extract only values that are explicitly present in the document. Never invent rows or quantities. Normalize dates as dd.MM.yyyy when possible. Return fields exactly as defined by the structured output schema. Use empty strings for missing fields. Set confidence to high, medium, or low."
+        }
+      },
+      "id": "0146e4e8-29c5-4ac5-beb6-80079a6e6b98",
+      "name": "Process Stock Receipt Data",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -2160,
+        2144
+      ]
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\"type\":\"object\",\"properties\":{\"invoice_number\":{\"type\":\"string\"},\"invoice_date\":{\"type\":\"string\"},\"supplier_name\":{\"type\":\"string\"},\"supplier_eik\":{\"type\":\"string\"},\"supplier_vat_id\":{\"type\":\"string\"},\"tax_base\":{\"type\":\"string\"},\"vat_amount\":{\"type\":\"string\"},\"total_amount\":{\"type\":\"string\"},\"currency\":{\"type\":\"string\"},\"payment_method\":{\"type\":\"string\"},\"payment_due_date\":{\"type\":\"string\"},\"document_type\":{\"type\":\"string\"},\"confidence\":{\"type\":\"string\"}},\"required\":[\"invoice_number\",\"invoice_date\",\"supplier_name\",\"total_amount\",\"document_type\",\"confidence\"]}"
+      },
+      "id": "a10695e3-8943-4ea2-bb98-1da57d5eb9e3",
+      "name": "Invoice Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -2016,
+        1920
+      ]
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\"type\":\"object\",\"properties\":{\"supplier_name\":{\"type\":\"string\"},\"receipt_number\":{\"type\":\"string\"},\"receipt_date\":{\"type\":\"string\"},\"document_type\":{\"type\":\"string\"},\"confidence\":{\"type\":\"string\"},\"items\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"item_name\":{\"type\":\"string\"},\"quantity\":{\"type\":\"number\"},\"unit\":{\"type\":\"string\"}},\"required\":[\"item_name\"]}}},\"required\":[\"supplier_name\",\"receipt_number\",\"receipt_date\",\"document_type\",\"confidence\",\"items\"]}"
+      },
+      "id": "c7ee91aa-1295-4e36-ac8c-d0907afa6dd1",
+      "name": "Stock Receipt Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -2016,
+        2384
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "16hJSFzNAhKHUoTl_vSkpmfnJV8c-mamjIfZMqs8ZxGc",
+          "mode": "list",
+          "cachedResultName": "Разходи",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16hJSFzNAhKHUoTl_vSkpmfnJV8c-mamjIfZMqs8ZxGc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16hJSFzNAhKHUoTl_vSkpmfnJV8c-mamjIfZMqs8ZxGc/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Номер": "={{ $json.output.invoice_number }}",
+            "ЕИК": "={{ $json.output.supplier_eik }}",
+            "Клиент": "={{ $json.output.supplier_name }}",
+            "Дата": "={{ $json.output.invoice_date }}",
+            "Общо": "={{ $json.output.total_amount }}",
+            "Данъчна основа": "={{ $json.output.tax_base }}",
+            "ИН по ДДС": "={{ $json.output.supplier_vat_id }}",
+            "Вид на документ": "={{ $json.output.document_type }}",
+            "ДДС": "={{ $json.output.vat_amount }}",
+            "Метод на плащане": "={{ $json.output.payment_method }}",
+            "Срок на плащане": "={{ $json.output.payment_due_date }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Номер",
+              "displayName": "Номер",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Дата",
+              "displayName": "Дата",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Клиент",
+              "displayName": "Клиент",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ЕИК",
+              "displayName": "ЕИК",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ИН по ДДС",
+              "displayName": "ИН по ДДС",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Данъчна основа",
+              "displayName": "Данъчна основа",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ДДС",
+              "displayName": "ДДС",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Общо",
+              "displayName": "Общо",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Метод на плащане",
+              "displayName": "Метод на плащане",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Срок на плащане",
+              "displayName": "Срок на плащане",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Вид на документ",
+              "displayName": "Вид на документ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "a02d4fc5-42bf-49c9-9582-d94417c5ae4a",
+      "name": "Store Invoice Data",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1024,
+        2048
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "TgqPZCAlc2fnn5SG",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "11tLNM8Uf4B_y24oDfD0MuXY7PO8EpDoZQgwgcC3Zlrk",
+          "mode": "list",
+          "cachedResultName": "Инвентар",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11tLNM8Uf4B_y24oDfD0MuXY7PO8EpDoZQgwgcC3Zlrk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Inventory",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11tLNM8Uf4B_y24oDfD0MuXY7PO8EpDoZQgwgcC3Zlrk/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Артикул",
+              "displayName": "Артикул",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Категория",
+              "displayName": "Категория",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Количество",
+              "displayName": "Количество",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Единица",
+              "displayName": "Единица",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Последна доставка",
+              "displayName": "Последна доставка",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "e7ebd2f3-716e-4e44-a46b-d3b4a75eda9c",
+      "name": "Store Stock Receipt Data",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1632,
+        2144
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "TgqPZCAlc2fnn5SG",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger1').item.json.message.chat.id }}",
+        "text": "={{ $json['Клиент'] }} {{ $json['Клиент'] ? '✅ Фактура Номер ' + $json['Номер'] + ' от  ' + $json['Дата'] + ' е обработена успешно!' : '✅ Стокова бележка ' + $json['Номер']+ ' от ' + $json['Дата'] + ' е обработена успешно!' }} ",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "fbe4b3e0-5ea1-42fd-bbb4-d6689f7ad81d",
+      "name": "Send Confirmation",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -640,
+        2256
+      ],
+      "webhookId": "17eccac8-cbe4-40ed-b6e2-04e1518f012b",
+      "credentials": {
+        "telegramApi": {
+          "id": "XVpI5xS61NVUsqcw",
+          "name": "Telegram account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message",
+          "callback_query"
+        ],
+        "additionalFields": {}
+      },
+      "id": "6b978b79-6897-4695-bf9f-7192274ee42d",
+      "name": "Telegram Trigger1",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -4640,
+        2272
+      ],
+      "webhookId": "2a018836-b336-4cb6-a202-83204567bdd9",
+      "notesInFlow": false,
+      "executeOnce": false,
+      "credentials": {
+        "telegramApi": {
+          "id": "XVpI5xS61NVUsqcw",
+          "name": "Telegram account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "chatInput",
+              "value": "={{ $json.message.text }}",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "sessionId",
+              "value": "={{ $json.message.chat.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6720145c-a703-4d01-bcaf-7dfcac1e8811",
+      "name": "Workflow Configuration1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3600,
+        2624
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "11tLNM8Uf4B_y24oDfD0MuXY7PO8EpDoZQgwgcC3Zlrk",
+          "mode": "list",
+          "cachedResultName": "Инвентар",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11tLNM8Uf4B_y24oDfD0MuXY7PO8EpDoZQgwgcC3Zlrk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Inventory",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11tLNM8Uf4B_y24oDfD0MuXY7PO8EpDoZQgwgcC3Zlrk/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -1472,
+        3728
+      ],
+      "id": "11814a20-6cb8-4dad-94b6-e25bc626e8a4",
+      "name": "tool_hotel_inventory",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "008sYI13Jt5qQmo9",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Използвай за справки по ФАКТУРИ, разходни документи и плащания към доставчици.",
+        "documentId": {
+          "__rl": true,
+          "value": "16hJSFzNAhKHUoTl_vSkpmfnJV8c-mamjIfZMqs8ZxGc",
+          "mode": "list",
+          "cachedResultName": "Разходи",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16hJSFzNAhKHUoTl_vSkpmfnJV8c-mamjIfZMqs8ZxGc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16hJSFzNAhKHUoTl_vSkpmfnJV8c-mamjIfZMqs8ZxGc/edit#gid=0"
+        },
+        "options": {
+          "returnFirstMatch": false
+        }
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -1664,
+        3728
+      ],
+      "id": "927687f6-1d21-4861-b20b-90855cf68bd6",
+      "name": "tool_hotel_expenses",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "008sYI13Jt5qQmo9",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1xwBhKHqhHrlw_sp2TYoeIhfmjstvKrI_HCoF2dpcc20",
+          "mode": "list",
+          "cachedResultName": "payments_report_21_Jan_2026_22_06_05Recep",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xwBhKHqhHrlw_sp2TYoeIhfmjstvKrI_HCoF2dpcc20/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 85098524,
+          "mode": "list",
+          "cachedResultName": "payments_report_21_Jan_2026_22_06_05",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xwBhKHqhHrlw_sp2TYoeIhfmjstvKrI_HCoF2dpcc20/edit#gid=85098524"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -1840,
+        3728
+      ],
+      "id": "83981b25-91dc-4ba6-a4e7-b13bf273a392",
+      "name": "tool_hotel_payments",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "008sYI13Jt5qQmo9",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1PSQc5NDAn0eQu0ZFY9c6oHG483ed05tjZF8EteVCyMk",
+          "mode": "list",
+          "cachedResultName": "payments_report_21_Jan_2026_22_08_5Bar",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1PSQc5NDAn0eQu0ZFY9c6oHG483ed05tjZF8EteVCyMk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1788916701,
+          "mode": "list",
+          "cachedResultName": "payments_report_21_Jan_2026_22_08_5Bar",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1PSQc5NDAn0eQu0ZFY9c6oHG483ed05tjZF8EteVCyMk/edit#gid=1788916701"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -1296,
+        3728
+      ],
+      "id": "3ebe970b-d8c3-4e28-b0bd-527afefb6f88",
+      "name": "tool_hotel_income_bar",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "TgqPZCAlc2fnn5SG",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "списък на целия персонал, длъжности, имена на служители, заплати и смени.",
+        "documentId": {
+          "__rl": true,
+          "value": "1_RI9HZbtljtGW5pyQNxmAqB0MyV3shEOCf3J99etyjU",
+          "mode": "list",
+          "cachedResultName": "График / ЗАПЛАТИ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_RI9HZbtljtGW5pyQNxmAqB0MyV3shEOCf3J99etyjU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1867074493,
+          "mode": "list",
+          "cachedResultName": "ЗАПЛАТИ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_RI9HZbtljtGW5pyQNxmAqB0MyV3shEOCf3J99etyjU/edit#gid=1867074493"
+        },
+        "options": {
+          "returnFirstMatch": false
+        }
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -2208,
+        3728
+      ],
+      "id": "c88e2797-e09c-4c13-af9d-adda01022ae6",
+      "name": "tool_hotel_personal_salary",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "008sYI13Jt5qQmo9",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1_RI9HZbtljtGW5pyQNxmAqB0MyV3shEOCf3J99etyjU",
+          "mode": "list",
+          "cachedResultName": "График / ЗАПЛАТИ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_RI9HZbtljtGW5pyQNxmAqB0MyV3shEOCf3J99etyjU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 161170609,
+          "mode": "list",
+          "cachedResultName": "График",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_RI9HZbtljtGW5pyQNxmAqB0MyV3shEOCf3J99etyjU/edit#gid=161170609"
+        },
+        "options": {
+          "returnFirstMatch": false
+        }
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -2032,
+        3728
+      ],
+      "id": "02a326e0-a9c7-4c37-94fd-c92485cf2ec7",
+      "name": "tool_hotel_personal_schedule",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "TgqPZCAlc2fnn5SG",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "o4-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -2896,
+        3584
+      ],
+      "id": "6de99f5d-e0e8-413d-9a65-0a4a4c59b155",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "E4AW17NZjMCdeyMA",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "IDENTITY\nYou are Hotel General Manager Orchestrator V8 for a hotel in Bansko. You act as the operational coordination layer between specialist managers and the final Telegram response.\n\nCURRENT CONTEXT\nLocation: Bansko, Bulgaria\nToday: {{ $now.setZone('Europe/Sofia').toFormat('dd.MM.yyyy') }}\nCurrent time: {{ $now.setZone('Europe/Sofia').toFormat('HH:mm') }}\nDay of week: {{ $now.setZone('Europe/Sofia').toFormat('cccc') }}\n\nCORE ROLE\n1. Recognize the business topic.\n2. Call only relevant connected managers.\n3. Synthesize facts into a concise management answer.\n4. If data is missing, say so clearly and do not invent.\n5. When useful, add short ACTIONS or NEXT STEPS.\n\nCONNECTED MANAGERS\n- Front Office Manager: occupancy, ADR, RevPAR, free rooms, reservations, reception.\n- Accounting Manager: expenses, payments, invoices, bar revenue.\n- HR Manager: schedules, shifts, attendance, compensation, staffing vs occupancy risk.\n- F&B Manager: breakfast covers, inventory, food cost range.\n- Marketing Manager: only when the request asks for commercial context; if a source is missing, report missing data.\n- get_weather: only for weather in Bansko.\n\nADMIN REFERENCE\n- Primary user-facing products are GM MORNING BRIEF and EXCEPTION REPORT.\n- Current live data layer is mostly Google Sheets, so do not present the system as a PMS source of truth.\n- Marketing live review and live campaign ROI sources are not connected.\n- Document intake is production-oriented for PDF invoice and PDF stock receipt only.\n- If connected data is missing, surface DATA GAPS clearly instead of guessing.\n- Observability sink may be absent if no valid log destination is configured. Do not mention internal infrastructure unless the user asks.\n\nDELEGATION RULES\n- For a single-topic request, call only one manager.\n- For a multi-topic request, call all relevant managers in one answer.\n- Do not ask unnecessary clarification questions if you can calculate the date or period.\n- Translate relative time like today, tomorrow, or next week into an exact dd.MM.yyyy date before using tools.\n- If a manager returns DATA_GAP, surface it clearly in the final answer.\n\nSPECIAL MODES\n- GM MORNING BRIEF is a primary product. Use it by default when the user asks for a morning brief, daily brief, operational summary, or asks \"what matters today\".\n- EXCEPTION REPORT is a primary product. Use it by default when the user asks for problems, risks, alerts, anomalies, or deviations.\n\nGM MORNING BRIEF FORMAT\n- Title: <b>GM MORNING BRIEF</b>\n- Section 1: <b>COMMERCIAL</b>\n  Include occupancy, ADR, RevPAR, arrivals, departures, and any reservation pressure signals for the requested date or for today.\n- Section 2: <b>OPERATIONS</b>\n  Include breakfast covers, reception pressure, OOS or room-risk signals, and the most relevant staffing note if available.\n- Section 3: <b>FINANCE</b>\n  Include payment, expense, or revenue signals only if data exists.\n- Section 4: <b>DATA GAPS</b>\n  Include only if required.\n- Section 5: <b>ACTIONS BEFORE NOON</b>\n  Include the 1 to 3 highest-value actions.\n\nEXCEPTION REPORT FORMAT\n- Title: <b>EXCEPTION REPORT</b>\n- Rank issues by operational severity.\n- Each issue must include:\n  1. what is wrong\n  2. likely business impact\n  3. immediate next action\n- If no confirmed exception exists, say that no confirmed exception is visible in the connected data.\n\nOUTPUT STYLE\n- Reply in Bulgarian.\n- Use Telegram HTML only: <b>, <i>, <u>.\n- Do not use Markdown.\n- Use short sections separated by blank lines.\n- Highlight only important numbers and decisions.\n\nFINAL ANSWER SHAPE\n<b>...</b>\n- fact\n- fact\n\n<b>DATA GAPS</b>\n- ...\n\n<b>ACTIONS</b>\n- ...\n\nIf there are no data gaps, omit that section. If there are no actions, end with a short management conclusion."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -2240,
+        2688
+      ],
+      "id": "57f5dac5-3f75-483c-b6dd-e2f02dc60b36",
+      "name": "Hotel Manager"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -3488,
+        2896
+      ],
+      "id": "00d37fff-e294-4c4c-83b1-7a601fa0efec",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "H4DBPZwrqpTxYEqG",
+          "name": "OpenAi account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {
+          "frequencyPenalty": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -2160,
+        1920
+      ],
+      "id": "6bbeee11-df5a-480d-afe2-d10266b5adf9",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "H4DBPZwrqpTxYEqG",
+          "name": "OpenAi account 4"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        -3440,
+        3088
+      ],
+      "id": "34da56b1-c938-42cf-9f4b-ba7e0ca644d8",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "chatId": "425406605",
+        "text": "A processing error occurred. Please try again or review the input data.",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -3216,
+        3088
+      ],
+      "id": "b3442666-1d1b-418b-982a-cbaa9328f43f",
+      "name": "Send Error Notification",
+      "webhookId": "0f099a05-1dde-4115-8f00-ae06032a8012",
+      "credentials": {
+        "telegramApi": {
+          "id": "XVpI5xS61NVUsqcw",
+          "name": "Telegram account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "filetype-check",
+              "leftValue": "={{ $('Telegram Trigger1').item.json.message.document ? $('Telegram Trigger1').item.json.message.document.mime_type : 'image' }}",
+              "rightValue": "application/pdf",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -3536,
+        2064
+      ],
+      "id": "5ee5c98f-6975-4a21-9c3b-38ab8fe992a6",
+      "name": "Check File Type"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger1').item.json.message.chat.id }}",
+        "text": "Unsupported format. Please send the invoice or stock receipt as PDF.",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -3248,
+        2224
+      ],
+      "id": "913da4da-c34e-4908-86db-f064485e8b12",
+      "name": "Unsupported Format Message",
+      "webhookId": "03a12d0c-085c-4c8e-8e4b-e831e79bd7d6",
+      "credentials": {
+        "telegramApi": {
+          "id": "XVpI5xS61NVUsqcw",
+          "name": "Telegram account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger1').item.json.message.chat.id }}",
+        "text": "Document type could not be recognized. Please send an invoice or stock receipt in PDF format.",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -2800,
+        2240
+      ],
+      "id": "7cc5cf59-d1ef-4fe8-aae1-df3005890c5b",
+      "name": "Unknown Document Type",
+      "webhookId": "61a98859-b141-4162-a768-c15b36b7c056",
+      "credentials": {
+        "telegramApi": {
+          "id": "XVpI5xS61NVUsqcw",
+          "name": "Telegram account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "documentId": {
+          "__rl": true,
+          "value": "16hJSFzNAhKHUoTl_vSkpmfnJV8c-mamjIfZMqs8ZxGc",
+          "mode": "list",
+          "cachedResultName": "Разходи",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16hJSFzNAhKHUoTl_vSkpmfnJV8c-mamjIfZMqs8ZxGc/edit?usp=drivesdk"
+        }
+      },
+      "id": "5d4ed5d5-6e81-4883-81e8-ea1515dcfdaf",
+      "name": "Check Duplicate Invoice",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1648,
+        1776
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "TgqPZCAlc2fnn5SG",
+          "name": "Google Sheets account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "id-dup",
+              "leftValue": "={{ $json['Номер'] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "isNotEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "8184bca3-aa29-4826-bd96-acf625ef2eb6",
+      "name": "If Invoice Exists",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1296,
+        1904
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger1').item.json.message.chat.id }}",
+        "text": "Duplicate invoice detected. The invoice already exists and will not be stored again.",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "id": "b952d67d-ddc5-4416-8607-d0279fc7089e",
+      "name": "Duplicate Invoice Message",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -736,
+        1664
+      ],
+      "webhookId": "7ce48cf8-b506-49eb-a6fe-b27e4303e0e2",
+      "credentials": {
+        "telegramApi": {
+          "id": "XVpI5xS61NVUsqcw",
+          "name": "Telegram account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "ЗАДЪЛЖИТЕЛЕН за справки. ИЗПОЛЗВАЙ ФИЛТЪР по колона 'По дата' (ТОЧЕН ФОРМАТ dd.MM.yyyy, например 07.03.2026), за да извлечеш точния ред. Съдържа: ADR, RevPAR, Заетост, Леглодни.",
+        "documentId": {
+          "__rl": true,
+          "value": "1Vs3dyukStJf1W4-_luRNQPngx7f-9qqK1GieQius9U0",
+          "mode": "list",
+          "cachedResultName": "Forecast_Pricing",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Vs3dyukStJf1W4-_luRNQPngx7f-9qqK1GieQius9U0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 969520691,
+          "mode": "list",
+          "cachedResultName": "Интеграция на Excel за прогнозна заетост",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Vs3dyukStJf1W4-_luRNQPngx7f-9qqK1GieQius9U0/edit#gid=969520691"
+        },
+        "options": {
+          "returnFirstMatch": false
+        }
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -2672,
+        3728
+      ],
+      "id": "056d31c5-faba-4d1d-99b2-339d8e6d3192",
+      "name": "Forecast_Tool",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "TgqPZCAlc2fnn5SG",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionKey": "=chat_history {{ $json.sessionId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryRedisChat",
+      "typeVersion": 1,
+      "position": [
+        -3312,
+        2896
+      ],
+      "id": "8ade0653-d4d9-4679-9fb0-fe7763755f70",
+      "name": "Redis Chat Memory",
+      "credentials": {
+        "redis": {
+          "id": "Yau2G472wufz4FCh",
+          "name": "Redis account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "ЗАДЪЛЖИТЕЛЕН за справки. ИЗПОЛЗВАЙ ФИЛТЪР по колона 'По дата' (ТОЧЕН ФОРМАТ dd.MM.yyyy, например 07.03.2026), за да извлечеш точния ред. Съдържа: Име,\tПериод,\tНастаняване,\tИзхранване,\tБрой гости,\tОбща сума,\tИмейл,\tТелефон и Бележки",
+        "documentId": {
+          "__rl": true,
+          "value": "1EVylj4JZSJTlOi0b4oVWgetsXuWs13WhxJh88IJfwi4",
+          "mode": "list",
+          "cachedResultName": "Reservations",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1EVylj4JZSJTlOi0b4oVWgetsXuWs13WhxJh88IJfwi4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1085273564,
+          "mode": "list",
+          "cachedResultName": "New",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1EVylj4JZSJTlOi0b4oVWgetsXuWs13WhxJh88IJfwi4/edit#gid=1085273564"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -2512,
+        3728
+      ],
+      "id": "6005d678-6a93-4464-b48f-f0d2282e1725",
+      "name": "reservations_tool",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "TgqPZCAlc2fnn5SG",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "ЗАДЪЛЖИТЕЛЕН за справки. ИЗПОЛЗВАЙ ФИЛТЪР по колона 'По дата' (ТОЧЕН ФОРМАТ dd.MM.yyyy, например 07.03.2026), за да извлечеш точния ред. Съдържа: Номер,\tГост,\tЧас на заминаване,\tСтая,\tПрестой,\tКомпания / Мероприятие/ Агент,\tБаланс,\tdescription.",
+        "documentId": {
+          "__rl": true,
+          "value": "1Ef_eAOga0x8-JFkqiuEqwRyN6xm8JRnn_mk4xkKbRBw",
+          "mode": "list",
+          "cachedResultName": "reception",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Ef_eAOga0x8-JFkqiuEqwRyN6xm8JRnn_mk4xkKbRBw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Ef_eAOga0x8-JFkqiuEqwRyN6xm8JRnn_mk4xkKbRBw/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -2368,
+        3728
+      ],
+      "id": "93193a6b-bcf3-460a-a3cb-0932cddb7cfb",
+      "name": "reception_tool",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "TgqPZCAlc2fnn5SG",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = $input.first().json.output || '';\nconst chatId = $('Telegram Trigger1').first().json.message.chat.id;\nconst clean = output.replace(/<br\\s*\\/?>/gi, '\\n').replace(/\\r/g, '');\nconst MAX = 4096;\n\nfunction closeOpenTags(text) {\n  const openTags = [];\n  const regex = /<\\/?([biu])>/gi;\n  let match;\n  while ((match = regex.exec(text)) !== null) {\n    const full = match[0];\n    const tag = match[1].toLowerCase();\n    if (full[1] === '/') {\n      const index = openTags.lastIndexOf(tag);\n      if (index !== -1) openTags.splice(index, 1);\n    } else {\n      openTags.push(tag);\n    }\n  }\n  return {\n    prefix: openTags.map((tag) => `<${tag}>`).join(''),\n    suffix: [...openTags].reverse().map((tag) => `</${tag}>`).join(''),\n  };\n}\n\nfunction splitText(text) {\n  const chunks = [];\n  let remaining = text.trim();\n  while (remaining.length > MAX) {\n    let cut = remaining.lastIndexOf('\\n\\n', MAX);\n    if (cut < MAX * 0.5) cut = remaining.lastIndexOf('\\n', MAX);\n    if (cut < MAX * 0.5) cut = remaining.lastIndexOf(' ', MAX);\n    if (cut < MAX * 0.5) cut = MAX;\n\n    let piece = remaining.slice(0, cut).trim();\n    const tags = closeOpenTags(piece);\n    piece += tags.suffix;\n    chunks.push(piece);\n    remaining = (tags.prefix + remaining.slice(cut)).trim();\n  }\n  if (remaining) chunks.push(remaining);\n  return chunks;\n}\n\nreturn splitText(clean).map((text) => ({ json: { text, chatId } }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -960,
+        2672
+      ],
+      "id": "split-long-msg-v7-001",
+      "name": "Split Long Message"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "auth-check-v8",
+              "leftValue": "={{ $json.message.chat.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "access-control-v8-001",
+      "name": "Access Control",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -4272,
+        2560
+      ],
+      "notes": "CONFIGURE: Replace the condition with a whitelist.\nExample: {{ [123456789, 987654321].includes($json.message.chat.id) }}\nAdd your authorized Telegram chat IDs.\nDefault: allows all valid messages."
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.message.chat.id }}",
+        "text": "⛔ Нямате достъп до тази система.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "unauthorized-msg-v8-001",
+      "name": "Unauthorized Message",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -4048,
+        2672
+      ],
+      "webhookId": "access-denied-v8-001",
+      "credentials": {
+        "telegramApi": {
+          "id": "XVpI5xS61NVUsqcw",
+          "name": "Telegram account 4"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Error Trigger": [
+      {
+        "json": {
+          "execution": {
+            "id": "3770",
+            "url": "https://beway.app.n8n.cloud/workflow/tFWiP6guNncBliLB/executions/3770",
+            "error": {
+              "level": "warning",
+              "tags": {},
+              "description": "\n<p>Try either:</p>\n<ol>\n  <li>Enabling 'Convert types where required'</li>\n  <li>Converting the second field to a number by adding <code>.toNumber()</code></li>\n</ol>\n\t\t\t",
+              "timestamp": 1773611122501,
+              "context": {
+                "itemIndex": 0
+              },
+              "functionality": "regular",
+              "name": "NodeOperationError",
+              "node": {
+                "parameters": {
+                  "conditions": {
+                    "options": {
+                      "caseSensitive": true,
+                      "leftValue": "",
+                      "typeValidation": "strict",
+                      "version": 2
+                    },
+                    "conditions": [
+                      {
+                        "id": "auth-check-v8",
+                        "leftValue": "={{ $json.message.chat.id }}",
+                        "rightValue": "",
+                        "operator": {
+                          "type": "number",
+                          "operation": "exists"
+                        }
+                      }
+                    ],
+                    "combinator": "and"
+                  },
+                  "looseTypeValidation": false,
+                  "options": {}
+                },
+                "id": "access-control-v8-001",
+                "name": "Access Control",
+                "type": "n8n-nodes-base.if",
+                "typeVersion": 2.2,
+                "position": [
+                  -4272,
+                  2560
+                ],
+                "notes": "CONFIGURE: Replace the condition with a whitelist.\nExample: {{ [123456789, 987654321].includes($json.message.chat.id) }}\nAdd your authorized Telegram chat IDs.\nDefault: allows all valid messages."
+              },
+              "messages": [],
+              "message": "Wrong type: '' is a string but was expecting a number [condition 0, item 0]",
+              "stack": "NodeOperationError: Wrong type: '' is a string but was expecting a number [condition 0, item 0]\n    at extractValue (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+exporter-trace-otlp_9f358c3eeaef0d2736f54ac9757ada43/node_modules/n8n-core/src/execution-engine/node-execution-context/utils/extract-value.ts:211:9)\n    at ExecuteContext._getNodeParameter (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+exporter-trace-otlp_9f358c3eeaef0d2736f54ac9757ada43/node_modules/n8n-core/src/execution-engine/node-execution-context/node-execution-context.ts:499:29)\n    at ExecuteContext.getNodeParameter (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+exporter-trace-otlp_9f358c3eeaef0d2736f54ac9757ada43/node_modules/n8n-core/src/execution-engine/node-execution-context/execute-context.ts:134:9)\n    at /usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-nodes-base@file+packages+nodes-base_@aws-sdk+credential-providers@3.808.0_asn1.js@5_8da18263ca0574b0db58d4fefd8173ce/node_modules/n8n-nodes-base/nodes/If/V2/IfV2.node.ts:96:18\n    at Array.forEach (<anonymous>)\n    at ExecuteContext.execute (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-nodes-base@file+packages+nodes-base_@aws-sdk+credential-providers@3.808.0_asn1.js@5_8da18263ca0574b0db58d4fefd8173ce/node_modules/n8n-nodes-base/nodes/If/V2/IfV2.node.ts:88:23)\n    at WorkflowExecute.executeNode (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+exporter-trace-otlp_9f358c3eeaef0d2736f54ac9757ada43/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:1043:31)\n    at WorkflowExecute.runNode (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+exporter-trace-otlp_9f358c3eeaef0d2736f54ac9757ada43/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:1222:22)\n    at /usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+exporter-trace-otlp_9f358c3eeaef0d2736f54ac9757ada43/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:1659:38\n    at /usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+exporter-trace-otlp_9f358c3eeaef0d2736f54ac9757ada43/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:2302:11"
+            },
+            "lastNodeExecuted": "Access Control",
+            "mode": "webhook",
+            "executionContext": {
+              "version": 1,
+              "establishedAt": 1773611122500,
+              "source": "webhook",
+              "triggerNode": {
+                "name": "Telegram Trigger1",
+                "type": "n8n-nodes-base.telegramTrigger"
+              }
+            }
+          },
+          "workflow": {
+            "id": "tFWiP6guNncBliLB",
+            "name": "Hotel General Manager Multi V8"
+          }
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Marketing Manager": {
+      "ai_tool": [
+        [
+          {
+            "node": "Hotel Manager",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Front Office Manager": {
+      "ai_tool": [
+        [
+          {
+            "node": "Hotel Manager",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HR Manager": {
+      "ai_tool": [
+        [
+          {
+            "node": "Hotel Manager",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Accounting Manager": {
+      "ai_tool": [
+        [
+          {
+            "node": "Hotel Manager",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_weather": {
+      "ai_tool": [
+        [
+          {
+            "node": "Hotel Manager",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "F&B Manager": {
+      "ai_tool": [
+        [
+          {
+            "node": "Hotel Manager",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Message Type": {
+      "main": [
+        [
+          {
+            "node": "Download Voice File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Workflow Configuration1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Check for Document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Voice File": {
+      "main": [
+        [
+          {
+            "node": "Transcribe Voice to Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe Voice to Text": {
+      "main": [
+        [
+          {
+            "node": "Prepare Transcribed Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Document Type": {
+      "main": [
+        [
+          {
+            "node": "Process Invoice Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Process Stock Receipt Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Unknown Document Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Document": {
+      "main": [
+        [
+          {
+            "node": "Check File Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check for Document": {
+      "main": [
+        [
+          {
+            "node": "Download Document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from PDF": {
+      "main": [
+        [
+          {
+            "node": "Route Document Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Invoice Data": {
+      "main": [
+        [
+          {
+            "node": "Check Duplicate Invoice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Stock Receipt Data": {
+      "main": [
+        [
+          {
+            "node": "Store Stock Receipt Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Invoice Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Process Invoice Data",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stock Receipt Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Process Stock Receipt Data",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Invoice Data": {
+      "main": [
+        [
+          {
+            "node": "Send Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Stock Receipt Data": {
+      "main": [
+        [
+          {
+            "node": "Send Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Access Control",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workflow Configuration1": {
+      "main": [
+        [
+          {
+            "node": "Hotel Manager",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Transcribed Text": {
+      "main": [
+        [
+          {
+            "node": "Hotel Manager",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "tool_hotel_inventory": {
+      "ai_tool": [
+        [
+          {
+            "node": "F&B Manager",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "tool_hotel_expenses": {
+      "ai_tool": [
+        [
+          {
+            "node": "Accounting Manager",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "tool_hotel_payments": {
+      "ai_tool": [
+        [
+          {
+            "node": "Accounting Manager",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "F&B Manager",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "Front Office Manager",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "tool_hotel_income_bar": {
+      "ai_tool": [
+        [
+          {
+            "node": "Accounting Manager",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "tool_hotel_personal_salary": {
+      "ai_tool": [
+        [
+          {
+            "node": "HR Manager",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "tool_hotel_personal_schedule": {
+      "ai_tool": [
+        [
+          {
+            "node": "HR Manager",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Front Office Manager",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Accounting Manager",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "HR Manager",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "F&B Manager",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Marketing Manager",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hotel Manager": {
+      "main": [
+        [
+          {
+            "node": "Split Long Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Long Message": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Hotel Manager",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Process Invoice Data",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Process Stock Receipt Data",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Send Error Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check File Type": {
+      "main": [
+        [
+          {
+            "node": "Extract from PDF",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Unsupported Format Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Duplicate Invoice": {
+      "main": [
+        [
+          {
+            "node": "If Invoice Exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Invoice Exists": {
+      "main": [
+        [
+          {
+            "node": "Duplicate Invoice Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Store Invoice Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Forecast_Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "Front Office Manager",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "F&B Manager",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "Marketing Manager",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "HR Manager",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Hotel Manager",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "reservations_tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "Front Office Manager",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "reception_tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "Front Office Manager",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Access Control": {
+      "main": [
+        [
+          {
+            "node": "Check Message Type",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Unauthorized Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "c01e4964-4127-404a-bccd-261c0366e758",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c80d7e0c09cada4d959f583f9d2dc4a6f5f1d4b05b051a2f5e4a563803db598b"
+  },
+  "id": "tFWiP6guNncBliLB",
+  "tags": []
+}
