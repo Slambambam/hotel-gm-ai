@@ -295,10 +295,10 @@ REDIS_PORT=6379
 
 ```javascript
 // Текущо (един потребител):
-[425406605].includes(Number($json.message.from.id))
+[123456789].includes(Number($json.message.from.id))
 
 // С допълнителни потребители:
-[425406605, 987654321, 111222333].includes(Number($json.message.from.id))
+[123456789, 987654321, 111222333].includes(Number($json.message.from.id))
 ```
 
 При неоторизиран достъп: потребителят получава "⛔ Нямате достъп до тази система."
