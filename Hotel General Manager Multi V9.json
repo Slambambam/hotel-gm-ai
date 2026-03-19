@@ -57,7 +57,7 @@
         "toolDescription": "Financial facts for expenses, payments, bar revenue, and accounting records. Return only verified amounts, currency, and period.",
         "text": "={{ $json.chatInput }}",
         "options": {
-          "systemMessage": "You are the hotel Accounting Controller.\n\nAVAILABLE SOURCES:\n- tool_hotel_expenses: invoices and expense records.\n- tool_hotel_payments: payments.\n- tool_hotel_income_bar: bar revenue.\n\nRULES:\n1. Never invent amounts, currency, or counterparties.\n2. Include currency and period when possible.\n3. If data is missing, return DATA_GAP.\n4. Do not use HTML.\n5. Return this contract:\nDOMAIN: ACCOUNTING\nDATE_SCOPE: <date_or_period>\nFACTS:\n- ...\nDATA_GAPS:\n- ...\nRECOMMENDED_ACTIONS:\n- ..."
+          "systemMessage": "You are the hotel Accounting Controller.\n\nAVAILABLE SOURCES:\n- tool_hotel_expenses: invoices and expense records.\n- tool_hotel_payments: reception payments.\n- tool_hotel_income_bar: bar revenue.\n\nRULES:\n1. Never invent amounts, currency, or counterparties.\n2. Include currency and period when possible.\n3. If data is missing, return DATA_GAP.\n4. Do not use HTML.\n5. IMPORTANT: Only fetch tools relevant to the query. For daily status queries, focus on TODAY or the most recent entries only. Do NOT load all historical data.\n6. If the query is a general status check (not a specific financial query), return a brief summary of the most recent available data — do not pull full history.\n7. Return this contract:\nDOMAIN: ACCOUNTING\nDATE_SCOPE: <date_or_period>\nFACTS:\n- ...\nDATA_GAPS:\n- ...\nRECOMMENDED_ACTIONS:\n- ..."
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agentTool",
@@ -254,511 +254,6 @@
     },
     {
       "parameters": {
-        "rules": {
-          "values": [
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": false,
-                  "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 3
-                },
-                "conditions": [
-                  {
-                    "leftValue": "={{ $json.text.toLowerCase() }}",
-                    "rightValue": "фактура",
-                    "operator": {
-                      "type": "string",
-                      "operation": "contains"
-                    },
-                    "id": "4bf61ac1-3b01-40b0-bb55-49594dec8d21"
-                  },
-                  {
-                    "leftValue": "={{ $json.text.toLowerCase() }}",
-                    "rightValue": "инвойс",
-                    "operator": {
-                      "type": "string",
-                      "operation": "contains"
-                    },
-                    "id": "inv-check-v2"
-                  },
-                  {
-                    "leftValue": "={{ $json.text.toLowerCase() }}",
-                    "rightValue": "invoice",
-                    "operator": {
-                      "type": "string",
-                      "operation": "contains"
-                    },
-                    "id": "invoice-en-check"
-                  }
-                ],
-                "combinator": "or"
-              },
-              "renameOutput": true,
-              "outputKey": "Invoice"
-            },
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": false,
-                  "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 3
-                },
-                "conditions": [
-                  {
-                    "leftValue": "={{ $json.text.toLowerCase() }}",
-                    "rightValue": "стокова разписка",
-                    "operator": {
-                      "type": "string",
-                      "operation": "contains"
-                    },
-                    "id": "70cb342b-1b36-489b-be6b-34b844a2d2a1"
-                  },
-                  {
-                    "leftValue": "={{ $json.text.toLowerCase() }}",
-                    "rightValue": "delivery note",
-                    "operator": {
-                      "type": "string",
-                      "operation": "contains"
-                    },
-                    "id": "delivery-note-check"
-                  }
-                ],
-                "combinator": "or"
-              },
-              "renameOutput": true,
-              "outputKey": "Стокова разписка"
-            }
-          ]
-        },
-        "options": {
-          "fallbackOutput": "extra"
-        }
-      },
-      "id": "5f53b458-334f-4557-b43f-a758ad316bfd",
-      "name": "Route Document Type",
-      "type": "n8n-nodes-base.switch",
-      "typeVersion": 3.4,
-      "position": [
-        -2960,
-        1808
-      ]
-    },
-    {
-      "parameters": {
-        "resource": "file",
-        "fileId": "={{ $json.message.document ? $json.message.document.file_id : $json.message.photo[$json.message.photo.length - 1].file_id }}",
-        "additionalFields": {}
-      },
-      "id": "65167e96-c77a-4158-91ac-b86dcdda2462",
-      "name": "Download Document",
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1.2,
-      "position": [
-        -3696,
-        1872
-      ],
-      "webhookId": "d94ba1a2-af43-40e7-a5b9-7a0dcbe28add",
-      "credentials": {
-        "telegramApi": {
-          "id": "XVpI5xS61NVUsqcw",
-          "name": "Telegram account 4"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 2
-          },
-          "conditions": [
-            {
-              "id": "id-1",
-              "leftValue": "={{ $json.message.document }}",
-              "operator": {
-                "type": "object",
-                "operation": "exists"
-              }
-            },
-            {
-              "id": "id-2",
-              "leftValue": "={{ $json.message.photo }}",
-              "operator": {
-                "type": "array",
-                "operation": "exists"
-              }
-            }
-          ],
-          "combinator": "or"
-        },
-        "options": {}
-      },
-      "id": "71eb6a37-c92a-4516-89c7-11bf87bc0d17",
-      "name": "Check for Document",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [
-        -3856,
-        2032
-      ]
-    },
-    {
-      "parameters": {
-        "operation": "pdf",
-        "options": {}
-      },
-      "id": "313e144f-d1a8-4a9a-bf89-63d249c75c57",
-      "name": "Extract from PDF",
-      "type": "n8n-nodes-base.extractFromFile",
-      "typeVersion": 1.1,
-      "position": [
-        -3264,
-        2016
-      ]
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "={{ $('Extract from PDF').item.json.text }}",
-        "hasOutputParser": true,
-        "options": {
-          "systemMessage": "You are an invoice extraction specialist for hotel accounting. Extract only values that are explicitly present in the document. Never invent values. Normalize dates as dd.MM.yyyy when possible. Return fields exactly as defined by the structured output schema. Use empty strings for missing fields. Set confidence to high, medium, or low."
-        }
-      },
-      "id": "077d88ad-7055-4650-99dc-23e90d8d8fe8",
-      "name": "Process Invoice Data",
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 3.1,
-      "position": [
-        -2160,
-        1664
-      ]
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "={{ $('Extract from PDF').item.json.text }}",
-        "hasOutputParser": true,
-        "options": {
-          "systemMessage": "You are a stock receipt extraction specialist for hotel inventory. Extract only values that are explicitly present in the document. Never invent rows or quantities. Normalize dates as dd.MM.yyyy when possible. Return fields exactly as defined by the structured output schema. Use empty strings for missing fields. Set confidence to high, medium, or low."
-        }
-      },
-      "id": "0146e4e8-29c5-4ac5-beb6-80079a6e6b98",
-      "name": "Process Stock Receipt Data",
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 3.1,
-      "position": [
-        -2160,
-        2144
-      ]
-    },
-    {
-      "parameters": {
-        "schemaType": "manual",
-        "inputSchema": "{\"type\":\"object\",\"properties\":{\"invoice_number\":{\"type\":\"string\"},\"invoice_date\":{\"type\":\"string\"},\"supplier_name\":{\"type\":\"string\"},\"supplier_eik\":{\"type\":\"string\"},\"supplier_vat_id\":{\"type\":\"string\"},\"tax_base\":{\"type\":\"string\"},\"vat_amount\":{\"type\":\"string\"},\"total_amount\":{\"type\":\"string\"},\"currency\":{\"type\":\"string\"},\"payment_method\":{\"type\":\"string\"},\"payment_due_date\":{\"type\":\"string\"},\"document_type\":{\"type\":\"string\"},\"confidence\":{\"type\":\"string\"}},\"required\":[\"invoice_number\",\"invoice_date\",\"supplier_name\",\"total_amount\",\"document_type\",\"confidence\"]}"
-      },
-      "id": "a10695e3-8943-4ea2-bb98-1da57d5eb9e3",
-      "name": "Invoice Output Parser",
-      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
-      "typeVersion": 1.3,
-      "position": [
-        -2016,
-        1920
-      ]
-    },
-    {
-      "parameters": {
-        "schemaType": "manual",
-        "inputSchema": "{\"type\":\"object\",\"properties\":{\"supplier_name\":{\"type\":\"string\"},\"receipt_number\":{\"type\":\"string\"},\"receipt_date\":{\"type\":\"string\"},\"document_type\":{\"type\":\"string\"},\"confidence\":{\"type\":\"string\"},\"items\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"item_name\":{\"type\":\"string\"},\"quantity\":{\"type\":\"number\"},\"unit\":{\"type\":\"string\"}},\"required\":[\"item_name\"]}}},\"required\":[\"supplier_name\",\"receipt_number\",\"receipt_date\",\"document_type\",\"confidence\",\"items\"]}"
-      },
-      "id": "c7ee91aa-1295-4e36-ac8c-d0907afa6dd1",
-      "name": "Stock Receipt Output Parser",
-      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
-      "typeVersion": 1.3,
-      "position": [
-        -2016,
-        2384
-      ]
-    },
-    {
-      "parameters": {
-        "operation": "append",
-        "documentId": {
-          "__rl": true,
-          "value": "16hJSFzNAhKHUoTl_vSkpmfnJV8c-mamjIfZMqs8ZxGc",
-          "mode": "list",
-          "cachedResultName": "Разходи",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16hJSFzNAhKHUoTl_vSkpmfnJV8c-mamjIfZMqs8ZxGc/edit?usp=drivesdk"
-        },
-        "sheetName": {
-          "__rl": true,
-          "value": "gid=0",
-          "mode": "list",
-          "cachedResultName": "Sheet1",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16hJSFzNAhKHUoTl_vSkpmfnJV8c-mamjIfZMqs8ZxGc/edit#gid=0"
-        },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "Номер": "={{ $json.output.invoice_number }}",
-            "ЕИК": "={{ $json.output.supplier_eik }}",
-            "Клиент": "={{ $json.output.supplier_name }}",
-            "Дата": "={{ $json.output.invoice_date }}",
-            "Общо": "={{ $json.output.total_amount }}",
-            "Данъчна основа": "={{ $json.output.tax_base }}",
-            "ИН по ДДС": "={{ $json.output.supplier_vat_id }}",
-            "Вид на документ": "={{ $json.output.document_type }}",
-            "ДДС": "={{ $json.output.vat_amount }}",
-            "Метод на плащане": "={{ $json.output.payment_method }}",
-            "Срок на плащане": "={{ $json.output.payment_due_date }}"
-          },
-          "matchingColumns": [],
-          "schema": [
-            {
-              "id": "Номер",
-              "displayName": "Номер",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Дата",
-              "displayName": "Дата",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Клиент",
-              "displayName": "Клиент",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "ЕИК",
-              "displayName": "ЕИК",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "ИН по ДДС",
-              "displayName": "ИН по ДДС",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Данъчна основа",
-              "displayName": "Данъчна основа",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "ДДС",
-              "displayName": "ДДС",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Общо",
-              "displayName": "Общо",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Метод на плащане",
-              "displayName": "Метод на плащане",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Срок на плащане",
-              "displayName": "Срок на плащане",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Вид на документ",
-              "displayName": "Вид на документ",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
-        },
-        "options": {}
-      },
-      "id": "a02d4fc5-42bf-49c9-9582-d94417c5ae4a",
-      "name": "Store Invoice Data",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.7,
-      "position": [
-        -1024,
-        2048
-      ],
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "TgqPZCAlc2fnn5SG",
-          "name": "Google Sheets account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "append",
-        "documentId": {
-          "__rl": true,
-          "value": "11tLNM8Uf4B_y24oDfD0MuXY7PO8EpDoZQgwgcC3Zlrk",
-          "mode": "list",
-          "cachedResultName": "Инвентар",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11tLNM8Uf4B_y24oDfD0MuXY7PO8EpDoZQgwgcC3Zlrk/edit?usp=drivesdk"
-        },
-        "sheetName": {
-          "__rl": true,
-          "value": "gid=0",
-          "mode": "list",
-          "cachedResultName": "Inventory",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11tLNM8Uf4B_y24oDfD0MuXY7PO8EpDoZQgwgcC3Zlrk/edit#gid=0"
-        },
-        "columns": {
-          "mappingMode": "autoMapInputData",
-          "value": {},
-          "matchingColumns": [],
-          "schema": [
-            {
-              "id": "Артикул",
-              "displayName": "Артикул",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Категория",
-              "displayName": "Категория",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Количество",
-              "displayName": "Количество",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Единица",
-              "displayName": "Единица",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Последна доставка",
-              "displayName": "Последна доставка",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
-        },
-        "options": {}
-      },
-      "id": "e7ebd2f3-716e-4e44-a46b-d3b4a75eda9c",
-      "name": "Store Stock Receipt Data",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.7,
-      "position": [
-        -1632,
-        2144
-      ],
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "TgqPZCAlc2fnn5SG",
-          "name": "Google Sheets account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "chatId": "={{ $('Telegram Trigger1').item.json.message.chat.id }}",
-        "text": "={{ $json['Клиент'] }} {{ $json['Клиент'] ? '✅ Фактура Номер ' + $json['Номер'] + ' от  ' + $json['Дата'] + ' е обработена успешно!' : '✅ Стокова бележка ' + $json['Номер']+ ' от ' + $json['Дата'] + ' е обработена успешно!' }} ",
-        "additionalFields": {
-          "appendAttribution": false
-        }
-      },
-      "id": "fbe4b3e0-5ea1-42fd-bbb4-d6689f7ad81d",
-      "name": "Send Confirmation",
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1.2,
-      "position": [
-        -640,
-        2256
-      ],
-      "webhookId": "17eccac8-cbe4-40ed-b6e2-04e1518f012b",
-      "credentials": {
-        "telegramApi": {
-          "id": "XVpI5xS61NVUsqcw",
-          "name": "Telegram account 4"
-        }
-      }
-    },
-    {
-      "parameters": {
         "updates": [
           "message",
           "callback_query"
@@ -828,7 +323,9 @@
           "cachedResultName": "Inventory",
           "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11tLNM8Uf4B_y24oDfD0MuXY7PO8EpDoZQgwgcC3Zlrk/edit#gid=0"
         },
-        "options": {}
+        "options": {
+          "range": "A1:G200"
+        }
       },
       "type": "n8n-nodes-base.googleSheetsTool",
       "typeVersion": 4.7,
@@ -864,7 +361,8 @@
           "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16hJSFzNAhKHUoTl_vSkpmfnJV8c-mamjIfZMqs8ZxGc/edit#gid=0"
         },
         "options": {
-          "returnFirstMatch": false
+          "returnFirstMatch": false,
+          "range": "A1:M30"
         }
       },
       "type": "n8n-nodes-base.googleSheetsTool",
@@ -898,7 +396,9 @@
           "cachedResultName": "payments_report_21_Jan_2026_22_06_05",
           "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xwBhKHqhHrlw_sp2TYoeIhfmjstvKrI_HCoF2dpcc20/edit#gid=85098524"
         },
-        "options": {}
+        "options": {
+          "range": "A1:M30"
+        }
       },
       "type": "n8n-nodes-base.googleSheetsTool",
       "typeVersion": 4.7,
@@ -931,7 +431,9 @@
           "cachedResultName": "payments_report_21_Jan_2026_22_08_5Bar",
           "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1PSQc5NDAn0eQu0ZFY9c6oHG483ed05tjZF8EteVCyMk/edit#gid=1788916701"
         },
-        "options": {}
+        "options": {
+          "range": "A1:M30"
+        }
       },
       "type": "n8n-nodes-base.googleSheetsTool",
       "typeVersion": 4.7,
@@ -967,7 +469,8 @@
           "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_RI9HZbtljtGW5pyQNxmAqB0MyV3shEOCf3J99etyjU/edit#gid=1867074493"
         },
         "options": {
-          "returnFirstMatch": false
+          "returnFirstMatch": false,
+          "range": "A1:J100"
         }
       },
       "type": "n8n-nodes-base.googleSheetsTool",
@@ -1002,7 +505,8 @@
           "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_RI9HZbtljtGW5pyQNxmAqB0MyV3shEOCf3J99etyjU/edit#gid=161170609"
         },
         "options": {
-          "returnFirstMatch": false
+          "returnFirstMatch": false,
+          "range": "A1:AZ60"
         }
       },
       "type": "n8n-nodes-base.googleSheetsTool",
@@ -1049,7 +553,7 @@
     {
       "parameters": {
         "options": {
-          "systemMessage": "IDENTITY\nYou are Hotel General Manager Orchestrator V9 for a hotel in Bansko. You act as the operational coordination layer between specialist managers and the final Telegram response.\n\nCURRENT CONTEXT\nLocation: Bansko, Bulgaria\nToday: {{ $now.setZone('Europe/Sofia').toFormat('dd.MM.yyyy') }}\nCurrent time: {{ $now.setZone('Europe/Sofia').toFormat('HH:mm') }}\nDay of week: {{ $now.setZone('Europe/Sofia').toFormat('cccc') }}\n\nCORE ROLE\n1. Recognize the business topic.\n2. Call only relevant connected managers.\n3. Synthesize facts into a concise management answer.\n4. If data is missing, say so clearly and do not invent.\n5. When useful, add short ACTIONS or NEXT STEPS.\n\nCONNECTED MANAGERS\n- Front Office Manager: occupancy, ADR, RevPAR, free rooms, reservations, reception.\n- Accounting Manager: expenses, payments, invoices, bar revenue.\n- HR Manager: schedules, shifts, attendance, compensation, staffing vs occupancy risk.\n- F&B Manager: breakfast covers, inventory, food cost range.\n- Marketing Manager: only when the request asks for commercial context; if a source is missing, report missing data.\n- Housekeeping Manager: room occupancy status and linen requirements for a single date only.\n- Forecast_Aggregated_Tool: use ONLY for period queries spanning more than 1 day. Always prefer this over Forecast_Tool for multi-day ranges.\n- get_weather: only for weather in Bansko.\n\nADMIN REFERENCE\n- Primary user-facing products are GM MORNING BRIEF and EXCEPTION REPORT.\n- Current live data layer is mostly Google Sheets, so do not present the system as a PMS source of truth.\n- For single-date occupancy queries use Forecast_Tool. For date ranges (e.g. \"this week\", \"this month\") use Forecast_Aggregated_Tool.\n- Marketing live review and live campaign ROI sources are not connected.\n- Document intake is production-oriented for PDF invoice and PDF stock receipt only.\n- If connected data is missing, surface DATA GAPS clearly instead of guessing.\n- Observability sink may be absent if no valid log destination is configured. Do not mention internal infrastructure unless the user asks.\n\nDELEGATION RULES\n- For a single-topic request, call only one manager.\n- For a multi-topic request, call all relevant managers in one answer.\n- Do not ask unnecessary clarification questions if you can calculate the date or period.\n- Translate relative time like today, tomorrow, or next week into an exact dd.MM.yyyy date before using tools.\n- If a manager returns DATA_GAP, surface it clearly in the final answer.\n\nSPECIAL MODES\n- GM MORNING BRIEF is a primary product. Use it by default when the user asks for a morning brief, daily brief, operational summary, or asks \"what matters today\".\n- EXCEPTION REPORT is a primary product. Use it by default when the user asks for problems, risks, alerts, anomalies, or deviations.\n\nGM MORNING BRIEF FORMAT\n- Title: <b>GM MORNING BRIEF</b>\n- Section 1: <b>COMMERCIAL</b>\n  Include occupancy, ADR, RevPAR, arrivals, departures, and any reservation pressure signals for the requested date or for today.\n- Section 2: <b>OPERATIONS</b>\n  Include breakfast covers, reception pressure, OOS or room-risk signals, and the most relevant staffing note if available.\n- Section 3: <b>FINANCE</b>\n  Include payment, expense, or revenue signals only if data exists.\n- Section 4: <b>DATA GAPS</b>\n  Include only if required.\n- Section 5: <b>ACTIONS BEFORE NOON</b>\n  Include the 1 to 3 highest-value actions.\n\nEXCEPTION REPORT FORMAT\n- Title: <b>EXCEPTION REPORT</b>\n- Rank issues by operational severity.\n- Each issue must include:\n  1. what is wrong\n  2. likely business impact\n  3. immediate next action\n- If no confirmed exception exists, say that no confirmed exception is visible in the connected data.\n\nOUTPUT STYLE\n- Reply in Bulgarian.\n- Use Telegram HTML only: <b>, <i>, <u>.\n- Do not use Markdown.\n- Use short sections separated by blank lines.\n- Highlight only important numbers and decisions.\n\nFINAL ANSWER SHAPE\n<b>...</b>\n- fact\n- fact\n\n<b>DATA GAPS</b>\n- ...\n\n<b>ACTIONS</b>\n- ...\n\nIf there are no data gaps, omit that section. If there are no actions, end with a short management conclusion."
+          "systemMessage": "=`IDENTITY\nYou are Hotel General Manager Orchestrator V9 for a hotel in Bansko. You act as the operational coordination layer between specialist managers and the final Telegram response.\n\nCURRENT CONTEXT\nLocation: Bansko, Bulgaria\nToday: ${$now.setZone('Europe/Sofia').toFormat('dd.MM.yyyy')}\nCurrent time: ${$now.setZone('Europe/Sofia').toFormat('HH:mm')}\nDay of week: ${$now.setZone('Europe/Sofia').toFormat('cccc')}\n\nCORE ROLE\n1. Recognize the business topic.\n2. Call only relevant connected managers.\n3. Synthesize facts into a concise management answer.\n4. If data is missing, say so clearly and do not invent.\n5. When useful, add short ACTIONS or NEXT STEPS.\n\nCONNECTED MANAGERS\n- Front Office Manager: occupancy, ADR, RevPAR, free rooms, reservations, reception.\n- Accounting Manager: expenses, payments, invoices, bar revenue. IMPORTANT: Call this manager ONLY when the user explicitly asks about finances, expenses, invoices, or payments. Do NOT call for general status or morning brief — include DATA_GAP for FINANCE section instead.\n- HR Manager: schedules, shifts, attendance, compensation, staffing vs occupancy risk.\n- F&B Manager: breakfast covers, inventory, food cost range. Call ONLY when user explicitly asks about food, breakfast, inventory, or F&B. Do NOT call for general status or morning brief.\n- Marketing Manager: NEVER call for general status or morning brief. Only when user explicitly asks about marketing, reviews, or campaigns.\n- Housekeeping Manager: room occupancy status and linen requirements for a single date only. Call ONLY when user explicitly asks about housekeeping, rooms status, or linen. Do NOT call for general status or morning brief.\n- Forecast_Aggregated_Tool: use ONLY for period queries spanning more than 1 day. Always prefer this over Forecast_Tool for multi-day ranges.\n- get_weather: only for weather in Bansko.\n\nADMIN REFERENCE\n- Primary user-facing products are GM MORNING BRIEF and EXCEPTION REPORT.\n- Current live data layer is mostly Google Sheets, so do not present the system as a PMS source of truth.\n- For single-date occupancy queries use Forecast_Tool. For date ranges (e.g. \"this week\", \"this month\") use Forecast_Aggregated_Tool.\n- Marketing live review and live campaign ROI sources are not connected.\n- If connected data is missing, surface DATA GAPS clearly instead of guessing.\n- Observability sink may be absent if no valid log destination is configured. Do not mention internal infrastructure unless the user asks.\n\nDELEGATION RULES\n- For a single-topic request, call only one manager.\n- For GM MORNING BRIEF or general status (\"full status\", \"what matters today\", \"daily brief\"): call ONLY Front Office Manager + HR Manager. All other managers only on explicit user request.\n- For a multi-topic request outside morning brief, call all relevant managers in one answer.\n- Do not ask unnecessary clarification questions if you can calculate the date or period.\n- Translate relative time like today, tomorrow, or next week into an exact dd.MM.yyyy date before using tools.\n- If a manager returns DATA_GAP, surface it clearly in the final answer.\n\nSPECIAL MODES\n- GM MORNING BRIEF is a primary product. Use it by default when the user asks for a morning brief, daily brief, operational summary, or asks \"what matters today\".\n- EXCEPTION REPORT is a primary product. Use it by default when the user asks for problems, risks, alerts, anomalies, or deviations.\n\nGM MORNING BRIEF FORMAT\n- Title: <b>GM MORNING BRIEF</b>\n- Section 1: <b>COMMERCIAL</b>\n  Include occupancy, ADR, RevPAR, arrivals, departures, and any reservation pressure signals for the requested date or for today.\n- Section 2: <b>OPERATIONS</b>\n  Include reception pressure and the most relevant staffing note if available. Skip OOS/housekeeping unless explicitly asked.\n- Section 3: <b>FINANCE</b>\n  Skip this section entirely. Do not call Accounting Manager. Write: DATA_GAP — финансови данни се зареждат при изрична заявка.\n- Section 4: <b>DATA GAPS</b>\n  Include only if required.\n- Section 5: <b>ACTIONS BEFORE NOON</b>\n  Include the 1 to 3 highest-value actions.\n\nEXCEPTION REPORT FORMAT\n- Title: <b>EXCEPTION REPORT</b>\n- Rank issues by operational severity.\n- Each issue must include:\n  1. what is wrong\n  2. likely business impact\n  3. immediate next action\n- If no confirmed exception exists, say that no confirmed exception is visible in the connected data.\n\nOUTPUT STYLE\n- Reply in Bulgarian.\n- Use Telegram HTML only: <b>, <i>, <u>.\n- Do not use Markdown.\n- Use short sections separated by blank lines.\n- Highlight only important numbers and decisions.\n\nFINAL ANSWER SHAPE\n<b>...</b>\n- fact\n- fact\n\n<b>DATA GAPS</b>\n- ...\n\n<b>ACTIONS</b>\n- ...\n\nIf there are no data gaps, omit that section. If there are no actions, end with a short management conclusion.`"
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
@@ -1153,175 +657,6 @@
     },
     {
       "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 2
-          },
-          "conditions": [
-            {
-              "id": "filetype-check",
-              "leftValue": "={{ $('Telegram Trigger1').item.json.message.document ? $('Telegram Trigger1').item.json.message.document.mime_type : 'image' }}",
-              "rightValue": "application/pdf",
-              "operator": {
-                "type": "string",
-                "operation": "equals"
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [
-        -3536,
-        2064
-      ],
-      "id": "5ee5c98f-6975-4a21-9c3b-38ab8fe992a6",
-      "name": "Check File Type"
-    },
-    {
-      "parameters": {
-        "chatId": "={{ $('Telegram Trigger1').item.json.message.chat.id }}",
-        "text": "Unsupported format. Please send the invoice or stock receipt as PDF.",
-        "additionalFields": {
-          "appendAttribution": false,
-          "parse_mode": "HTML"
-        }
-      },
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1.2,
-      "position": [
-        -3248,
-        2224
-      ],
-      "id": "913da4da-c34e-4908-86db-f064485e8b12",
-      "name": "Unsupported Format Message",
-      "webhookId": "03a12d0c-085c-4c8e-8e4b-e831e79bd7d6",
-      "credentials": {
-        "telegramApi": {
-          "id": "XVpI5xS61NVUsqcw",
-          "name": "Telegram account 4"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "chatId": "={{ $('Telegram Trigger1').item.json.message.chat.id }}",
-        "text": "Document type could not be recognized. Please send an invoice or stock receipt in PDF format.",
-        "additionalFields": {
-          "appendAttribution": false,
-          "parse_mode": "HTML"
-        }
-      },
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1.2,
-      "position": [
-        -2800,
-        2240
-      ],
-      "id": "7cc5cf59-d1ef-4fe8-aae1-df3005890c5b",
-      "name": "Unknown Document Type",
-      "webhookId": "61a98859-b141-4162-a768-c15b36b7c056",
-      "credentials": {
-        "telegramApi": {
-          "id": "XVpI5xS61NVUsqcw",
-          "name": "Telegram account 4"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "search",
-        "documentId": {
-          "__rl": true,
-          "value": "16hJSFzNAhKHUoTl_vSkpmfnJV8c-mamjIfZMqs8ZxGc",
-          "mode": "list",
-          "cachedResultName": "Разходи",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16hJSFzNAhKHUoTl_vSkpmfnJV8c-mamjIfZMqs8ZxGc/edit?usp=drivesdk"
-        }
-      },
-      "id": "5d4ed5d5-6e81-4883-81e8-ea1515dcfdaf",
-      "name": "Check Duplicate Invoice",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.7,
-      "position": [
-        -1648,
-        1776
-      ],
-      "alwaysOutputData": true,
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "TgqPZCAlc2fnn5SG",
-          "name": "Google Sheets account"
-        }
-      },
-      "onError": "continueRegularOutput"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 2
-          },
-          "conditions": [
-            {
-              "id": "id-dup",
-              "leftValue": "={{ $json['Номер'] }}",
-              "rightValue": "",
-              "operator": {
-                "type": "string",
-                "operation": "isNotEmpty"
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "id": "8184bca3-aa29-4826-bd96-acf625ef2eb6",
-      "name": "If Invoice Exists",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [
-        -1296,
-        1904
-      ]
-    },
-    {
-      "parameters": {
-        "chatId": "={{ $('Telegram Trigger1').item.json.message.chat.id }}",
-        "text": "Duplicate invoice detected. The invoice already exists and will not be stored again.",
-        "additionalFields": {
-          "appendAttribution": false,
-          "parse_mode": "HTML"
-        }
-      },
-      "id": "b952d67d-ddc5-4416-8607-d0279fc7089e",
-      "name": "Duplicate Invoice Message",
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1.2,
-      "position": [
-        -736,
-        1664
-      ],
-      "webhookId": "7ce48cf8-b506-49eb-a6fe-b27e4303e0e2",
-      "credentials": {
-        "telegramApi": {
-          "id": "XVpI5xS61NVUsqcw",
-          "name": "Telegram account 4"
-        }
-      }
-    },
-    {
-      "parameters": {
         "descriptionType": "manual",
         "toolDescription": "ЗАДЪЛЖИТЕЛЕН за справки. ИЗПОЛЗВАЙ ФИЛТЪР по колона 'По дата' (ТОЧЕН ФОРМАТ dd.MM.yyyy, например 07.03.2026), за да извлечеш точния ред. Съдържа: ADR, RevPAR, Заетост, Леглодни.",
         "documentId": {
@@ -1339,7 +674,8 @@
           "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Vs3dyukStJf1W4-_luRNQPngx7f-9qqK1GieQius9U0/edit#gid=969520691"
         },
         "options": {
-          "returnFirstMatch": false
+          "returnFirstMatch": false,
+          "range": "A1:M400"
         }
       },
       "type": "n8n-nodes-base.googleSheetsTool",
@@ -1394,7 +730,9 @@
           "cachedResultName": "New",
           "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1EVylj4JZSJTlOi0b4oVWgetsXuWs13WhxJh88IJfwi4/edit#gid=1085273564"
         },
-        "options": {}
+        "options": {
+          "range": "A1:K100"
+        }
       },
       "type": "n8n-nodes-base.googleSheetsTool",
       "typeVersion": 4.7,
@@ -1429,7 +767,9 @@
           "cachedResultName": "Sheet1",
           "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Ef_eAOga0x8-JFkqiuEqwRyN6xm8JRnn_mk4xkKbRBw/edit#gid=0"
         },
-        "options": {}
+        "options": {
+          "range": "A1:K100"
+        }
       },
       "type": "n8n-nodes-base.googleSheetsTool",
       "typeVersion": 4.7,
@@ -1695,16 +1035,16 @@
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
-            "Timestamp": "={{ $now.setZone('Europe/Sofia').toISO() }}",
-            "ChatId": "={{ $input.first().json.chatId || 'scheduled' }}",
-            "Query": "={{ ($input.first().json.chatInput || '').substring(0, 200) }}",
+            "output": "={{ $now.setZone('Europe/Sofia').toISO() }}",
+            "ok": "={{ $input.first().json.chatId || 'scheduled' }}",
+            "result": "={{ ($input.first().json.chatInput || '').substring(0, 200) }}",
             "ResponseLength": "={{ ($input.first().json.output || '').length }}"
           },
           "matchingColumns": [],
           "schema": [
             {
-              "id": "Timestamp",
-              "displayName": "Timestamp",
+              "id": "output",
+              "displayName": "output",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -1712,8 +1052,8 @@
               "canBeUsedToMatch": false
             },
             {
-              "id": "ChatId",
-              "displayName": "ChatId",
+              "id": "ok",
+              "displayName": "ok",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -1721,8 +1061,8 @@
               "canBeUsedToMatch": false
             },
             {
-              "id": "Query",
-              "displayName": "Query",
+              "id": "result",
+              "displayName": "result",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -1920,11 +1260,6 @@
             "node": "Workflow Configuration1",
             "type": "main",
             "index": 0
-          },
-          {
-            "node": "Check for Document",
-            "type": "main",
-            "index": 0
           }
         ]
       ]
@@ -1945,130 +1280,6 @@
         [
           {
             "node": "Prepare Transcribed Text",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Route Document Type": {
-      "main": [
-        [
-          {
-            "node": "Process Invoice Data",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Process Stock Receipt Data",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Unknown Document Type",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Download Document": {
-      "main": [
-        [
-          {
-            "node": "Check File Type",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Check for Document": {
-      "main": [
-        [
-          {
-            "node": "Download Document",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Extract from PDF": {
-      "main": [
-        [
-          {
-            "node": "Route Document Type",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Process Invoice Data": {
-      "main": [
-        [
-          {
-            "node": "Check Duplicate Invoice",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Process Stock Receipt Data": {
-      "main": [
-        [
-          {
-            "node": "Store Stock Receipt Data",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Invoice Output Parser": {
-      "ai_outputParser": [
-        [
-          {
-            "node": "Process Invoice Data",
-            "type": "ai_outputParser",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Stock Receipt Output Parser": {
-      "ai_outputParser": [
-        [
-          {
-            "node": "Process Stock Receipt Data",
-            "type": "ai_outputParser",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Store Invoice Data": {
-      "main": [
-        [
-          {
-            "node": "Send Confirmation",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Store Stock Receipt Data": {
-      "main": [
-        [
-          {
-            "node": "Send Confirmation",
             "type": "main",
             "index": 0
           }
@@ -2260,18 +1471,7 @@
     },
     "OpenAI Chat Model2": {
       "ai_languageModel": [
-        [
-          {
-            "node": "Process Invoice Data",
-            "type": "ai_languageModel",
-            "index": 0
-          },
-          {
-            "node": "Process Stock Receipt Data",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "Error Trigger": {
@@ -2279,53 +1479,6 @@
         [
           {
             "node": "Send Error Notification",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Check File Type": {
-      "main": [
-        [
-          {
-            "node": "Extract from PDF",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Unsupported Format Message",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Check Duplicate Invoice": {
-      "main": [
-        [
-          {
-            "node": "If Invoice Exists",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "If Invoice Exists": {
-      "main": [
-        [
-          {
-            "node": "Duplicate Invoice Message",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Store Invoice Data",
             "type": "main",
             "index": 0
           }
