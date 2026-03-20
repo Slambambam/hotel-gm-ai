@@ -53,5 +53,10 @@ function doGet(e) {
     summary.avg_adr = adrDays > 0 ? (totalADR / adrDays).toFixed(2) : 0;
   }
 
-  return ContentService.createTextOutput(JSON.stringify(summary)).setMimeType(ContentService.MimeType.JSON);
+  var json = JSON.stringify(summary);
+  var callback = e && e.parameter && e.parameter.callback;
+  if (callback) {
+    return ContentService.createTextOutput(callback + '(' + json + ')').setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
+  return ContentService.createTextOutput(json).setMimeType(ContentService.MimeType.JSON);
 }

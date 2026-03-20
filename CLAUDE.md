@@ -4,12 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Hotel General Manager AI — a multi-agent system (currently V9) that lets a hotel manager in Bansko, Bulgaria run all hotel operations via Telegram chat. Built on **n8n + LangChain + OpenAI + Redis + Google Sheets**.
+Hotel General Manager AI — a multi-agent system (**V10 Stable**) that lets a hotel manager in Bansko, Bulgaria run all hotel operations via Telegram chat. Built on **n8n + LangChain + OpenAI + Redis + Google Sheets + SerpAPI + AviationStack**.
 
 Architecture: **Hub-and-Spoke (Star Topology)**
 - **Orchestrator:** Hotel Manager agent (GPT-4o) — intent recognition, routing, response synthesis
 - **Sub-agents** (all GPT-4o-mini): Front Office, HR, Accounting, F&B, Housekeeping, Marketing
-- **Shared infra:** Redis (chat memory per chatId), Google Sheets (6 spreadsheets), Forecast_Tool, Forecast_Aggregated_Tool (aggregator.gs)
+- **Direct tools on Orchestrator:** get_weather (all BG cities), road_conditions, flights_bulgaria
+- **Shared infra:** Redis (chat memory, 10 msg window), Google Sheets (9 spreadsheets), Forecast_Tool, Forecast_Aggregated_Tool (aggregator.gs)
 - **Interface:** Telegram Bot (text + voice transcription)
 - **Scheduled:** Morning Brief (07:00), Night Audit (21:00)
 
@@ -17,30 +18,37 @@ Architecture: **Hub-and-Spoke (Star Topology)**
 
 | File | Purpose |
 |------|---------|
-| `Hotel General Manager Multi V9.json` | **CURRENT** production n8n workflow |
+| `Hotel General Manager Multi V10 Stable.json` | **CURRENT** production n8n workflow (42 nodes) |
+| `Hotel General Manager Multi V9.json` | Previous version — before V10 fixes |
 | `Hotel General Manager Multi V8.json` | Legacy — document processing base |
 | `Hotel General Manager Multi Stable.json` | Legacy — scheduled reports base |
-| `aggregator.gs` | Google Apps Script — aggregates forecast data for date ranges (deployed as Web App) |
+| `aggregator.gs` | Google Apps Script — aggregates forecast data for date ranges |
+| `AI_Architecture_Audit_V10.md` | Full architecture audit for V10 |
+| `ONBOARDING.md` | User guide for hotel managers |
 
-V8 and Stable are kept for reference. **All active development happens on V9.**
+**All active development happens on V10 Stable.**
 
 ## Working with the n8n Workflow JSON
 
-The V9 JSON is the core artifact (~58KB). It contains all n8n nodes, connections, agent prompts, and tool configurations. When editing:
+The V10 JSON is the core artifact (~65KB, 42 nodes). When editing:
 
 - **Node names are identifiers** — changing a node name breaks connections. Always update `connections` references if renaming.
-- **Agent system prompts** are embedded inside AI Agent nodes as the `text` field under `promptType: "define"`.
+- **Agent system prompts** are in `options.systemMessage` inside AI Agent nodes. **systemMessage does NOT support n8n expressions** — keep it static text only.
+- **Date injection** — dates are injected via `chatInput` in Set nodes (Workflow Configuration1, Prepare Transcribed Text, Morning Report Config, Night Audit Config). Format: `[CONTEXT: Дата: dd.MM.yyyy, Ден: cccc, Час: HH:mm]`.
 - **Tool bindings** are in the `connections` object — each agent lists its connected tools by node name.
 - **Access Control** uses an exact array whitelist: `[userId].includes(Number($json.message.from.id))`. Never revert to substring matching.
-- **Date format** expected by Forecast_Tool: `"15 Mar 2026 (Saturday)"` — the expression in the workflow generates this from `$now`.
+- **sessionId** uses daily reset format: `chatId-yyyy-MM-dd` to prevent context pollution.
 
 ## Architecture Constraints
 
+- **systemMessage does NOT support expressions** — never use `{{ }}`, `${}`, or `=` prefix in systemMessage fields. Inject dynamic values via chatInput Set nodes instead.
 - **Housekeeping Manager** supports single-date queries only (no date ranges).
-- **Marketing Manager** has no live data sources (Booking.com, Google Reviews) — returns DATA_GAP markers.
+- **Marketing Manager** now has Google Hotels + Google Reviews via SerpAPI. Google Ads/Meta ROI still returns DATA_GAP.
 - **Math Decoupling** — agents must NOT perform arithmetic. They extract raw numbers; calculations belong in system prompt formulas or Code nodes.
 - **PDF processing** was removed in V9 (17 nodes deleted from V8).
-- **Forecast_Aggregated_Tool** (via aggregator.gs) replaces N+1 Forecast_Tool calls for period queries. The aggregator expects query params `?start=01%20Mar%202026&end=31%20Mar%202026`.
+- **Forecast_Aggregated_Tool** (via aggregator.gs) replaces N+1 Forecast_Tool calls for period queries. URL is hardcoded (n8n Cloud blocks $env).
+- **Redis memory** limited to 10 messages per session to prevent context overflow.
+- **Financial tools** (expenses, payments, bar income) limited to A1:M100 range.
 
 ## Google Sheets Spreadsheet IDs
 
@@ -55,29 +63,46 @@ The V9 JSON is the core artifact (~58KB). It contains all n8n nodes, connections
 | Reservations | `1EVylj4JZSJTlOi0b4oVWgetsXuWs13WhxJh88IJfwi4` |
 | Reception | `1Ef_eAOga0x8-JFkqiuEqwRyN6xm8JRnn_mk4xkKbRBw` |
 
+## External APIs
+
+| Service | Key Location | Free Tier |
+|---------|-------------|-----------|
+| SerpAPI (Google Hotels + Reviews) | Hardcoded in google_hotels_search, google_reviews_search nodes | 100 req/month |
+| AviationStack (Flights) | Hardcoded in flights_bulgaria node | 100 req/month |
+| OpenWeatherMap | n8n credentials | 1000 req/day |
+
 ## Language
 
 - System prompts and agent responses are in **Bulgarian**.
 - The codebase documentation is mixed Bulgarian/English.
 - User queries can be Bulgarian or English; the system responds in Bulgarian.
 
-## Known Issues & Roadmap Context
+## V10 Stable Changelog (2026-03-19)
 
-**Fixed in V9.1 (2026-03-19):**
-- ~~No retry logic for Google Sheets API 429 errors~~ → retryOnFail on all 10 sheet nodes
-- ~~No prompt injection protection~~ → SECURITY block on all 7 agents
-- ~~No tool failure handling~~ → TOOL ERRORS block on all 7 agents
-- ~~Hardcoded supplier names~~ → removed from V9 prompts
-- ~~Orphan OpenAI Chat Model2~~ → removed
+**New features:**
+- Competitor pricing via Google Hotels (SerpAPI)
+- Google Reviews/ratings search (SerpAPI)
+- Weather for all Bulgarian cities (dynamic $fromAI)
+- Flight arrivals/departures SOF/BOJ/VAR (AviationStack)
+- Road conditions (АПИ)
+
+**Fixes from V9:**
+- Date injection via chatInput (systemMessage doesn't support expressions)
+- Forecast_Aggregated_Tool URL hardcoded (n8n Cloud blocks $env)
+- Redis memory limited to 10 messages
+- Financial tool ranges M500→M100
+- Daily sessionId reset (chatId-yyyy-MM-dd)
+- All V9.1 fixes preserved: retry logic, security blocks, tool error handling
 
 **Still open:**
-- `$env.AGGREGATOR_WEB_APP_URL` does not work on n8n Cloud — needs hardcoded URL in Forecast_Aggregated_Tool node
-- OpenAI TPM rate limit (30K for GPT-4o Tier 1) — causes failures on rapid queries; retry mitigates but upgrade recommended
-- No input guardrails layer (rate limiting, PII filtering) before the orchestrator (P2)
+- Google Ads / Meta ROI not connected (P2)
+- No input guardrails layer (rate limiting, PII filtering) (P2)
 - No tool result caching (P2)
+- road_conditions API needs live testing (P1)
+- Audit Log headers need manual rename in Google Sheets (P1)
 
 ## Environment
 
 - **n8n Cloud instance:** beway.app.n8n.cloud
 - **Workflow ID:** tFWiP6guNncBliLB
-- Required env var: `AGGREGATOR_WEB_APP_URL` — points to deployed aggregator.gs Web App
+- **Aggregator URL:** hardcoded in Forecast_Aggregated_Tool node

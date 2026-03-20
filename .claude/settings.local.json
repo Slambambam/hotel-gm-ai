@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s -X GET \"https://beway.app.n8n.cloud/api/v1/workflows/tFWiP6guNncBliLB\" -H \"X-N8N-API-KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNjczOTEzNC1lZDQ4LTQzZTMtOGU2Ni1hZWQxMDcyOTU4N2QiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwianRpIjoiM2ZlMGJkZWItOTk1OC00NjFkLWFmMGUtNzlkYzgyMDI1OWE4IiwiaWF0IjoxNzczOTA4MTQ3LCJleHAiOjE3NzY0NTk2MDB9.wgl1eKCXra4Ixo5QRlcL7QPDHFoMyGAvZ1pdVh7VWu0\")",
+      "Bash(node:*)",
+      "Bash(curl -s -w \"\\\\nHTTP_CODE:%{http_code}\" -X PUT \"https://beway.app.n8n.cloud/api/v1/workflows/tFWiP6guNncBliLB\" -H \"X-N8N-API-KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNjczOTEzNC1lZDQ4LTQzZTMtOGU2Ni1hZWQxMDcyOTU4N2QiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwianRpIjoiM2ZlMGJkZWItOTk1OC00NjFkLWFmMGUtNzlkYzgyMDI1OWE4IiwiaWF0IjoxNzczOTA4MTQ3LCJleHAiOjE3NzY0NTk2MDB9.wgl1eKCXra4Ixo5QRlcL7QPDHFoMyGAvZ1pdVh7VWu0\" -H \"Content-Type: application/json\" -d @\"C:/Users/Zeroday/Desktop/GM/_n8n_update_payload.json\")",
+      "WebFetch(domain:beway.app.n8n.cloud)",
+      "Bash(curl:*)",
+      "Bash(node -e \":*)",
+      "Bash(taskkill //F //IM \"node.exe\")"
+    ]
+  }
+}
